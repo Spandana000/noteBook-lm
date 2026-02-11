@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from services.rag_service import rag_service
 from pydantic import BaseModel
@@ -38,10 +38,13 @@ handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)
 logger.addHandler(handler)
 
 @app.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    session_id: str = Form(...)
+):
     try:
-        logger.info(f"Uploading file: {file.filename}")
-        await rag_service.process_file(file)
+        logger.info(f"Uploading file: {file.filename} for session: {session_id}")
+        await rag_service.process_file(file, session_id)
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
@@ -115,7 +118,7 @@ async def chat(request: ChatRequest):
             new_title = (request.message[:40] + '...') if len(request.message) > 40 else request.message
             db.update_session(sid, title=new_title)
     
-    response = await rag_service.query(request.message, request.include_images)
+    response = await rag_service.query(request.message, request.include_images, sid)
     
     if sid:
         # Save bot message

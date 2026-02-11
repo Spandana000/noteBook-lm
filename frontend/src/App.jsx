@@ -253,6 +253,7 @@ export default function App() {
     setUploadedFile({ name: file.name, uploading: true });
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('session_id', currentSessionId);
     try {
       await axios.post("http://localhost:8000/upload", formData);
       setUploadedFile({ name: file.name, uploading: false });

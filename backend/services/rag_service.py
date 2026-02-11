@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+logger = logging.getLogger("lumina")
+
 class RAGService:
     def __init__(self):
         # Professional Client Initialization
@@ -19,7 +22,7 @@ class RAGService:
         self.chroma_client = chromadb.PersistentClient(path="./chroma_db")
         self.collection = self.chroma_client.get_or_create_collection(name="lumina_notebook")
 
-    async def process_file(self, file):
+    async def process_file(self, file, session_id: str):
         """Intelligently processes PDF, Text, Code, or Images."""
         filename = file.filename
         mime_type, _ = mimetypes.guess_type(filename)
@@ -92,18 +95,25 @@ class RAGService:
                         ids=[str(uuid.uuid4())],
                         embeddings=[res.embeddings[0].values],
                         documents=[chunk],
-                        metadatas=[{"filename": filename, "type": mime_type or "text"}]
+                        metadatas=[{"filename": filename, "type": mime_type or "text", "session_id": session_id}]
                     )
                 print(f"Successfully processed and embedded: {filename}")
             except Exception as e:
                 print(f"Error embedding {filename}: {e}")
                 raise e
 
-    async def query(self, query: str, include_images: bool):
+    async def query(self, query: str, include_images: bool, session_id: str = None):
         try:
             # 1. Context Retrieval (Using Google Embeddings)
             q_res = self.google_client.models.embed_content(model="models/gemini-embedding-001", contents=query)
-            docs = self.collection.query(query_embeddings=[q_res.embeddings[0].values], n_results=4)
+            where_filter = {"session_id": session_id} if session_id else None
+            logger.info(f"DEBUG: Querying with session_id='{session_id}', where_filter={where_filter}")
+            docs = self.collection.query(
+                query_embeddings=[q_res.embeddings[0].values], 
+                n_results=4,
+                where=where_filter
+            )
+            logger.info(f"DEBUG: Retrieved docs metadata: {docs['metadatas']}")
             context = "\n".join(docs['documents'][0]) if docs['documents'] else "No document context found."
 
             # 2. Multimedia Search (Using Groq for reasoning-based query generation)
