@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+pypdf
+chromadb
+google-genai
+groq
+ddgs
+python-dotenv
+Pillow

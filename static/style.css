@@ -1,0 +1,52 @@
+:root {
+    --glass: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+}
+
+body {
+    background: #0f172a;
+    color: var(--text);
+    font-family: sans-serif;
+    margin: 0;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-right: 1px solid var(--glass);
+}
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.glass-panel {
+    backdrop-filter: blur(10px);
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.image-grid img {
+    width: 100%;
+    border-radius: 8px;
+}
